@@ -1,5 +1,6 @@
 import express from "express"
 import Job from "../model/job.js"
+import { reminderQueue } from "../queues/queues.email.js"
 
 const router = express.Router()
 
@@ -30,16 +31,61 @@ const getAllJobs = async (req, res) => {
 
 // Get job by id
 const getJobById = async (req, res) => {
+    const jobId = req.params.id;
+    console.log("type: ", typeof jobId)
     try {
-        const job = await Job.findById(req.params.id)
+        const job = await Job.findById(jobId)
         res.status(200).json(job)
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
 }
 
+const deleteAllJobs = async (req, res) => {
+    try {
+        await Job.deleteMany({})
+        res.status(200).json({message: "All jobs deleted successfully"})
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+}
 
+const createJob = async (req, res) => {
+    try {
+        const {user_id} = req.params
+        const { job_name, job_type } = req.body
+        const now = new Date()
+        const jobDetails = await Job.create({
+            job_name: job_name,
+            job_type: job_type,
+            job_status: "pending",
+            job_next_run: new Date(now.getTime() + 5*60*1000),
+            payload: {
+                user_id,
+                subject: "Reminder",
+                message: "reminder is set for 5 min"
+            }
+        })
+
+         await reminderQueue.add("sendReminder", {
+            jobId: jobDetails._id,
+            user_id, 
+            subject: "Reminder",
+            message: "reminder is set for 5 min"
+         },
+             {
+             delay: 5*60*1000
+         })
+        // console.log("addReminder: ", addReminder)
+        res.status(201).json({message: "Job created successfully"})
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+    
+}
 
 router.get("/", getAllJobs)
 router.get("/:id", getJobById)
+router.delete("/", deleteAllJobs)
+router.post("/createJob/:user_id", createJob)
 export default router
