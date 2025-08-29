@@ -22,6 +22,8 @@ So, we will create a job and assign it to the user creation action.
 This is the event-driven approach.
 we can use bullmq here.
 
+
+
 ### Install
 
 - ```npm install```
@@ -58,6 +60,10 @@ Jobs: api/jobs
 3. GET: /getJob/:id
 4. DELETE: /deleteAllJobs
 5. DELETE: /deleteJob/:id
+
+### Medium Link
+[Medium Link](https://medium.com/@punamkumari399/job-scheduler-e4e78a1a1a29)
+
 
 
 
