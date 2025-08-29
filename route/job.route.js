@@ -67,15 +67,20 @@ const createJob = async (req, res) => {
             }
         })
 
-         await reminderQueue.add("sendReminder", {
-            jobId: jobDetails._id,
-            user_id, 
-            subject: "Reminder",
-            message: "reminder is set for 5 min"
-         },
-             {
-             delay: 5*60*1000
-         })
+        await reminderQueue.upsertJobScheduler(
+  "sendReminder",                     // schedulerId
+  { every: 5 * 60 * 1000 },           // repeat options (5 minutes)
+  {
+    name: "reminder-job",             // job name
+    data: {
+      jobId: jobDetails._id,
+      user_id,
+      subject: "Reminder",
+      message: "Reminder is set for 5 min"
+    },
+    opts: { removeOnComplete: true }, // optional job opts
+  }
+);
         // console.log("addReminder: ", addReminder)
         res.status(201).json({message: "Job created successfully"})
     } catch (error) {
