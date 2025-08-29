@@ -24,7 +24,7 @@ we can use bullmq here.
 
 ### Install
 
-- npm install
+- ```npm install```
 
 set up environment variables in .env file
 env variables:
